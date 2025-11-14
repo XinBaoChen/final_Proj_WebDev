@@ -61,6 +61,18 @@ export const addStudentThunk = (student) => async (dispatch) => {  // The THUNK
   }
 };
 
+// Add Campus
+// THUNK CREATOR:
+export const addCampusThunk = (campus) => async (dispatch) => {
+  try {
+    let res = await axios.post(`/api/campuses`, campus);
+    dispatch(ac.addCampus(res.data));
+    return res.data;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 // Delete Student
 // THUNK CREATOR:
 export const deleteStudentThunk = studentId => async dispatch => {  // The THUNK
