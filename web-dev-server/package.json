@@ -1,5 +1,5 @@
 {
-  "name": "starter-server",
+  "name": "starter-server-webdev",
   "version": "1.0.0",
   "description": "backend for crud app",
   "main": "app.js",
@@ -13,7 +13,7 @@
     "express": "^4.17.1",
     "express-async-handler": "^1.1.4",
     "pg": "^8.5.1",
-    "pgtools": "^0.3.0",
+    "pgtools": "^1.0.1",
     "sequelize": "^6.3.5"
   },
   "devDependencies": {

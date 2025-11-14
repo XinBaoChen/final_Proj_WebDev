@@ -6,11 +6,11 @@ It is the first file to be called when starting the server application.
 It initiates all required parts of server application such as Express, routes, database, etc.  
 ==================================================*/
 /* SET UP DATABASE */
-// Import database setup utilities
-const createDB = require('./database/utils/createDB');  // Import function to create database
-const seedDB = require('./database/utils/seedDB');  // Import function to seed database
+// Import database setup utilities (from `web-dev-server` folder)
+const createDB = require('./web-dev-server/database/utils/createDB');  // Import function to create database
+const seedDB = require('./web-dev-server/database/utils/seedDB');  // Import function to seed database
 // Import database instance for database connection (including database name, username, and password)
-const db = require('./database');
+const db = require('./web-dev-server/database');
 
 /* MODEL SYNCHRONIZATION & DATABASE SEEDING */
 // Set up sync and seed process
@@ -38,7 +38,7 @@ const app = express();
 
 /* SET UP ROUTES */
 // Import sub-routes and associated router functions for students and campuses
-const apiRouter = require('./routes/index');
+const apiRouter = require('./web-dev-server/routes/index');
 
 /* CONFIGURE EXPRESS APPLICATION */
 // Create a function to configure the Express application

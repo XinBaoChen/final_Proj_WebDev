@@ -40,11 +40,28 @@ router.get('/:id', ash(async(req, res) => {
 }));
 
 /* ADD NEW STUDENT */
-router.post('/', function(req, res, next) {
-  Student.create(req.body)
-    .then(createdStudent => res.status(200).json(createdStudent))
-    .catch(err => next(err));
-});
+router.post('/', ash(async (req, res, next) => {
+  // Normalize campusId: convert empty string to undefined, convert to integer if present
+  const payload = { ...req.body };
+  if (payload.campusId === '' || payload.campusId === null || payload.campusId === undefined) {
+    delete payload.campusId;
+  } else {
+    // try to coerce to integer
+    const parsed = parseInt(payload.campusId);
+    if (Number.isNaN(parsed)) {
+      return res.status(400).json({ error: 'Invalid campusId' });
+    }
+    payload.campusId = parsed;
+    // ensure campus exists before attempting to insert to avoid FK constraint error
+    const campus = await Campus.findByPk(payload.campusId);
+    if (!campus) {
+      return res.status(400).json({ error: `Campus with id ${payload.campusId} not found` });
+    }
+  }
+
+  const createdStudent = await Student.create(payload);
+  res.status(200).json(createdStudent);
+}));
 
 /* DELETE STUDENT */
 router.delete('/:id', function(req, res, next) {

@@ -39,21 +39,31 @@ class NewStudentContainer extends Component {
 
     let student = {
         firstname: this.state.firstname,
-        lastname: this.state.lastname,
-        campusId: this.state.campusId
+        lastname: this.state.lastname
     };
-    
+
+    // Normalize campusId: send number only when provided
+    if (this.state.campusId && this.state.campusId !== '') {
+      const parsed = parseInt(this.state.campusId);
+      if (!Number.isNaN(parsed)) student.campusId = parsed;
+    }
+
     // Add new student in back-end database
     let newStudent = await this.props.addStudent(student);
 
-    // Update state, and trigger redirect to show the new student
-    this.setState({
-      firstname: "", 
-      lastname: "", 
-      campusId: null, 
-      redirect: true, 
-      redirectId: newStudent.id
-    });
+    // If server returned the created student, redirect to its page
+    if (newStudent && newStudent.id) {
+      this.setState({
+        firstname: "", 
+        lastname: "", 
+        campusId: null, 
+        redirect: true, 
+        redirectId: newStudent.id
+      });
+    } else {
+      // Show a simple error to the user (server likely returned validation error)
+      alert('Failed to create student. Please check input and try again.');
+    }
   }
 
   // Unmount when the component is being removed from the DOM:
