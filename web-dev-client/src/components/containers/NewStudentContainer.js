@@ -11,7 +11,7 @@ import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 
 import NewStudentView from '../views/NewStudentView';
-import { addStudentThunk } from '../../store/thunks';
+import { addStudentThunk, fetchAllCampusesThunk } from '../../store/thunks';
 
 class NewStudentContainer extends Component {
   // Initialize state
@@ -71,6 +71,11 @@ class NewStudentContainer extends Component {
       this.setState({redirect: false, redirectId: null});
   }
 
+  componentDidMount() {
+    // Fetch campuses for the campus dropdown
+    if (this.props.fetchAllCampuses) this.props.fetchAllCampuses();
+  }
+
   // Render new student input form
   render() {
     // Redirect to new student's page after submit
@@ -84,7 +89,8 @@ class NewStudentContainer extends Component {
         <Header />
         <NewStudentView 
           handleChange = {this.handleChange} 
-          handleSubmit={this.handleSubmit}      
+          handleSubmit={this.handleSubmit}
+          campuses={this.props.campuses}
         />
       </div>          
     );
@@ -94,13 +100,18 @@ class NewStudentContainer extends Component {
 // The following input argument is passed to the "connect" function used by "NewStudentContainer" component to connect to Redux Store.
 // The "mapDispatch" argument is used to dispatch Action (Redux Thunk) to Redux Store.
 // The "mapDispatch" calls the specific Thunk to dispatch its action. The "dispatch" is a function of Redux Store.
+const mapState = (state) => ({
+  campuses: state.allCampuses || []
+});
+
 const mapDispatch = (dispatch) => {
-    return({
-        addStudent: (student) => dispatch(addStudentThunk(student)),
-    })
+  return({
+    addStudent: (student) => dispatch(addStudentThunk(student)),
+    fetchAllCampuses: () => dispatch(fetchAllCampusesThunk())
+  })
 }
 
 // Export store-connected container by default
 // NewStudentContainer uses "connect" function to connect to Redux Store and to read values from the Store 
 // (and re-read the values when the Store State updates).
-export default connect(null, mapDispatch)(NewStudentContainer);
+export default connect(mapState, mapDispatch)(NewStudentContainer);
