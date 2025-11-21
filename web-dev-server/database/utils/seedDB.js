@@ -11,30 +11,39 @@ const seedDB = async () => {
 	const dummy_campus = await Campus.create({
 		name: "Hunter College",
 		address: "695 Park Ave, New York, NY 10065",
-		description: "This is a school in New York, New York."
+		description: "This is a school in New York, New York.",
+		imageUrl: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&q=80"
 	});
 	// Create a new campus
 	const dummy_campus2 = await Campus.create({
 		name: "Queens College",
 		address: "65-30 Kissena Blvd, Queens, NY 11367",
-		description: "This is a school in Queens, New York."
+		description: "This is a school in Queens, New York.",
+		imageUrl: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1200&q=80"
 	});
 	// Create a new campus
 	const dummy_campus3 = await Campus.create({
 		name: "Brooklyn College",
 		address: "2900 Bedford Ave, Brooklyn, NY 11210",
-		description: "This is a school in Brooklyn, New York."
+		description: "This is a school in Brooklyn, New York.",
+		imageUrl: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1200&q=80"
 	});
 	
 	// Create a new student for a campus
 	const dummy_student = await Student.create({
 		firstname: "Joe",
-      lastname: "Smith",
+		lastname: "Smith",
+		email: "joe.smith@example.com",
+		imageUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=256&q=80",
+		gpa: 3.2
 	});
 	// Create a new student for a campus
 	const dummy_student2 = await Student.create({
 		firstname: "Mary",
-      lastname: "Johnson",
+		lastname: "Johnson",
+		email: "mary.johnson@example.com",
+		imageUrl: "https://images.unsplash.com/photo-1545996124-1a00bca4d6f8?w=256&q=80",
+		gpa: 3.8
 	});
 
 	// Add students to campuses

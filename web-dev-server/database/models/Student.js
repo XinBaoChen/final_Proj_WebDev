@@ -16,6 +16,22 @@ const Student = db.define("student", {
     type: Sequelize.STRING,
     allowNull: false
   }
+  ,
+  email: {
+    type: Sequelize.STRING,
+    allowNull: true,
+    validate: { isEmail: true }
+  },
+  imageUrl: {
+    type: Sequelize.STRING,
+    allowNull: true,
+    defaultValue: null
+  },
+  gpa: {
+    type: Sequelize.FLOAT,
+    allowNull: true,
+    validate: { min: 0.0, max: 4.0 }
+  }
 });
 
 // Export the student model
