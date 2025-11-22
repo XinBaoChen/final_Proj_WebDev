@@ -21,8 +21,11 @@ class NewStudentContainer extends Component {
       firstname: "", 
       lastname: "", 
       campusId: null, 
+      email: '',
+      gpa: '',
       redirect: false, 
-      redirectId: null
+      redirectId: null,
+      errors: {}
     };
   }
 
@@ -42,10 +45,37 @@ class NewStudentContainer extends Component {
         lastname: this.state.lastname
     };
 
+    if (this.state.email) student.email = this.state.email;
+    if (this.state.gpa) student.gpa = parseFloat(this.state.gpa);
+
     // Normalize campusId: send number only when provided
     if (this.state.campusId && this.state.campusId !== '') {
       const parsed = parseInt(this.state.campusId);
       if (!Number.isNaN(parsed)) student.campusId = parsed;
+    }
+
+    // Validate inputs and collect errors
+    const errors = {};
+    const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+    if (student.campusId) {
+      const email = (this.state.email || '').trim();
+      if (!email) errors.email = 'Email is required to enroll to a campus.';
+      else if (!emailRegex.test(email)) errors.email = 'Please provide a valid email address.';
+      else student.email = email;
+    } else if (this.state.email) {
+      const email = this.state.email.trim();
+      if (!emailRegex.test(email)) errors.email = 'Please provide a valid email address.';
+      else student.email = email;
+    }
+    if (this.state.gpa) {
+      const g = parseFloat(this.state.gpa);
+      if (Number.isNaN(g) || g < 0 || g > 4) errors.gpa = 'GPA must be a number between 0.0 and 4.0';
+      else student.gpa = g;
+    }
+
+    if (Object.keys(errors).length) {
+      this.setState({ errors });
+      return;
     }
 
     // Add new student in back-end database
@@ -58,11 +88,12 @@ class NewStudentContainer extends Component {
         lastname: "", 
         campusId: null, 
         redirect: true, 
-        redirectId: newStudent.id
+        redirectId: newStudent.id,
+        errors: {}
       });
     } else {
       // Show a simple error to the user (server likely returned validation error)
-      alert('Failed to create student. Please check input and try again.');
+      this.setState({ errors: { form: 'Failed to create student. Please check input and try again.' } });
     }
   }
 

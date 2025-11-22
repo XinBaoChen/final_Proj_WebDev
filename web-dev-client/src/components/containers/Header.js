@@ -21,14 +21,15 @@ const useStyles = makeStyles(theme => ({
   title: {
     flexGrow: 1,
     textAlign: 'left',
-    fontType: 'bold',
-    fontFamily: 'sans-serif', 
-    fontSize: '35px', 
-    color: 'darkblue'
+    fontWeight: 700,
+    fontFamily: 'Inter, Roboto, sans-serif',
+    fontSize: '20px',
+    color: '#0f172a'
   },
   appBar:{
-    backgroundColor: '#fcb6bb',
-    shadows: ['none'],
+    background: 'linear-gradient(90deg,#eef2ff,#ffffff)',
+    boxShadow: 'none',
+    borderBottom: '1px solid rgba(15,23,42,0.04)'
   },
   greeting:{
     display: 'flex',
@@ -54,23 +55,25 @@ const Header = () => {
             Campus Management System
           </Typography>
 
-          <Link className={classes.links} to={'/'} >
-            <Button variant="contained" color="primary" style={{marginRight: '10px'}}>
-              Home
-            </Button>
-          </Link>
+          <nav style={{display:'flex',gap:10}}>
+            <Link className={classes.links} to={'/'} >
+              <Button variant="outlined" color="primary" style={{marginRight: '10px', borderRadius:8}}>
+                Home
+              </Button>
+            </Link>
 
-          <Link className={classes.links} to={'/campuses'} >
-            <Button variant="contained" color="primary" style={{marginRight: '10px'}}>
-              All Campuses
-            </Button>
-          </Link>
+            <Link className={classes.links} to={'/campuses'} >
+              <Button variant="outlined" color="primary" style={{marginRight: '10px', borderRadius:8}}>
+                Campuses
+              </Button>
+            </Link>
 
-          <Link className={classes.links} to={'/students'} >
-            <Button variant="contained" color="primary">
-              All Students
-            </Button>
-          </Link>
+            <Link className={classes.links} to={'/students'} >
+              <Button variant="outlined" color="primary" style={{borderRadius:8}}>
+                Students
+              </Button>
+            </Link>
+          </nav>
         </Toolbar>
       </AppBar>
     </div>

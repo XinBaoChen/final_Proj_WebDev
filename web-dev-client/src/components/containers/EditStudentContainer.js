@@ -7,7 +7,7 @@ import { fetchStudentThunk, editStudentThunk, fetchAllCampusesThunk } from '../.
 class EditStudentContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = { form: {} };
+    this.state = { form: {}, errors: {} };
   }
 
   async componentDidMount() {
@@ -32,9 +32,32 @@ class EditStudentContainer extends Component {
 
   handleSubmit = async (e) => {
     e.preventDefault();
-    const updated = await this.props.editStudent(this.state.form);
+    // client-side validation similar to NewStudentContainer
+    const payload = { ...this.state.form };
+    const errors = {};
+    const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+    if (payload.campusId) {
+      const email = (payload.email || '').trim();
+      if (!email) errors.email = 'Email is required to enroll to a campus.';
+      else if (!emailRegex.test(email)) errors.email = 'Please provide a valid email address.';
+      else payload.email = email;
+    } else if (payload.email) {
+      if (!emailRegex.test(payload.email)) errors.email = 'Please provide a valid email address.';
+    }
+    if (payload.gpa) {
+      const g = parseFloat(payload.gpa);
+      if (Number.isNaN(g) || g < 0 || g > 4) errors.gpa = 'GPA must be a number between 0.0 and 4.0';
+      else payload.gpa = g;
+    }
+    if (Object.keys(errors).length) {
+      this.setState({ errors });
+      return;
+    }
+    const updated = await this.props.editStudent(payload);
     if (updated && updated.id) {
       this.props.history.push(`/student/${updated.id}`);
+    } else if (!updated) {
+      this.setState({ errors: { form: 'Failed to update student' } });
     }
   };
 
@@ -51,6 +74,7 @@ class EditStudentContainer extends Component {
           onChange={this.handleChange}
           onSubmit={this.handleSubmit}
           onCancel={this.handleCancel}
+          errors={this.state.errors}
           campuses={this.props.campuses}
         />
       </div>

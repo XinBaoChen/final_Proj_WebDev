@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 
 import NewCampusView from '../views/NewCampusView';
-import { addCampusThunk, fetchAllCampusesThunk } from '../../store/thunks';
+import { addCampusThunk } from '../../store/thunks';
 
 class NewCampusContainer extends Component {
   constructor(props) {

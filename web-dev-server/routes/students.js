@@ -59,8 +59,20 @@ router.post('/', ash(async (req, res, next) => {
     }
   }
 
+  // If enrolling to a campus, require a valid email
+  if (payload.campusId) {
+    const email = (payload.email || '').trim();
+    const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+    if (!email || !emailRegex.test(email)) {
+      return res.status(400).json({ error: 'A valid email is required to enroll a student to a campus.' });
+    }
+    payload.email = email;
+  }
+
   const createdStudent = await Student.create(payload);
-  res.status(200).json(createdStudent);
+  // include campus relation in response
+  const createdWithCampus = await Student.findByPk(createdStudent.id, { include: [Campus] });
+  res.status(200).json(createdWithCampus);
 }));
 
 /* DELETE STUDENT */
@@ -76,11 +88,28 @@ router.delete('/:id', function(req, res, next) {
 
 /* EDIT STUDENT */
 router.put('/:id', ash(async(req, res) => {
-  await Student.update(req.body,
+  // Normalize payload and validate campus/email if present
+  const payload = { ...req.body };
+  if (payload.campusId === '' || payload.campusId === null) delete payload.campusId;
+  if (payload.campusId !== undefined) {
+    const parsed = parseInt(payload.campusId);
+    if (Number.isNaN(parsed)) return res.status(400).json({ error: 'Invalid campusId' });
+    const campus = await Campus.findByPk(parsed);
+    if (!campus) return res.status(400).json({ error: `Campus with id ${parsed} not found` });
+    payload.campusId = parsed;
+    const email = (payload.email || '').trim();
+    const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+    if (!email || !emailRegex.test(email)) {
+      return res.status(400).json({ error: 'A valid email is required to enroll a student to a campus.' });
+    }
+    payload.email = email;
+  }
+
+  await Student.update(payload,
         { where: {id: req.params.id} }
   );
-  // Find student by Primary Key
-  let student = await Student.findByPk(req.params.id);
+  // Find student by Primary Key and include campus
+  let student = await Student.findByPk(req.params.id, { include: [Campus] });
   res.status(201).json(student);  // Status code 201 Created - successful creation of a resource
 }));
 

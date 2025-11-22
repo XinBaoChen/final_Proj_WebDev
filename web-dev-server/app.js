@@ -17,13 +17,16 @@ const db = require('./database');
 const syncDatabase = async () => {
   try {
     // Model Synchronization:
-    // - Make a connection between the Node.js application (this server app) and the Postgres database application.
-    // - Create new tables (according to the models) in the Postgres database application, dropping tables first if they already existed
-    await db.sync({force: true});  // Drop table if already exists (force: true)
+    // By default do a non-destructive sync. To force a drop-and-create, set env var `FORCE_SYNC=true`.
+    const force = process.env.FORCE_SYNC === 'true';
+    await db.sync({ force });
     console.log('------Synced to db--------')
     // Database Seeding
-    await seedDB();  
-    console.log('--------Successfully seeded db--------');
+    // Only seed when explicitly requested via env var `SEED_DB=true` or when forcing a sync.
+    if (process.env.SEED_DB === 'true' || force) {
+      await seedDB();
+      console.log('--------Successfully seeded db--------');
+    }
   } 
   catch (err) {
     console.error('syncDB error:', err);

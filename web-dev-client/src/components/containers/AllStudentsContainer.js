@@ -6,7 +6,7 @@ passes data (if any) as props to the corresponding View component.
 If needed, it also defines the component's "connect" function.
 ================================================== */
 import Header from './Header';
-import { Component } from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from "react-router-dom";
 
@@ -16,26 +16,38 @@ import {
 } from '../../store/thunks';
 
 import AllStudentsView from '../views/AllStudentsView';
+import { useToast } from '../ui/ToastProvider';
+import { useConfirm } from '../ui/ConfirmDialog';
 
-class AllStudentsContainer extends Component {
-  // Get all students data from back-end database
-  componentDidMount() {
-    this.props.fetchAllStudents();
-  }
+const AllStudentsContainer = ({ allStudents, fetchAllStudents, deleteStudent }) => {
+  const toast = useToast();
+  const confirm = useConfirm();
 
-  // Render All Students view by passing all students data as props to the corresponding View component
-  render(){
-    return(
-      <div>
-        <Header />
-        <AllStudentsView 
-          students={this.props.allStudents}
-          deleteStudent={this.props.deleteStudent}   
-        />
-      </div>
-    )
-  }
-}
+  useEffect(() => {
+    fetchAllStudents();
+  }, [fetchAllStudents]);
+
+  const handleDelete = async (id) => {
+    const ok = await confirm.confirm({ title: 'Delete student', message: 'Delete this student? This action cannot be undone.' });
+    if (!ok) return;
+    try {
+      await deleteStudent(id);
+      toast.push('Student deleted');
+    } catch (err) {
+      toast.push('Failed to delete student');
+    }
+  };
+
+  return (
+    <div>
+      <Header />
+      <AllStudentsView 
+        students={allStudents}
+        deleteStudent={handleDelete}   
+      />
+    </div>
+  );
+};
 
 // The following 2 input arguments are passed to the "connect" function used by "AllStudentsContainer" component to connect to Redux Store.
 // 1. The "mapState" argument specifies the data from Redux Store that the component needs.

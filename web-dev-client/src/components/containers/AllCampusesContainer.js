@@ -6,32 +6,43 @@ passes data (if any) as props to the corresponding View component.
 If needed, it also defines the component's "connect" function.
 ================================================== */
 import Header from './Header';
-import { Component } from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { fetchAllCampusesThunk, deleteCampusThunk } from "../../store/thunks";
 import { AllCampusesView } from "../views";
+import { useToast } from '../ui/ToastProvider';
+import { useConfirm } from '../ui/ConfirmDialog';
 
-class AllCampusesContainer extends Component {
-  // Get all campuses data from back-end database
-  componentDidMount() {
-    console.log(this.props);
-    this.props.fetchAllCampuses();
-  }
+const AllCampusesContainer = ({ allCampuses, fetchAllCampuses, deleteCampus }) => {
+  const toast = useToast();
+  const confirm = useConfirm();
 
-  // Render All Campuses view by passing all campuses data as props to the corresponding View component
-  render() {
-    return (
-      <div>
-        <Header />
-        <AllCampusesView
-          allCampuses={this.props.allCampuses}
-          deleteCampus={this.props.deleteCampus}
-        />
-      </div>
-    );
-  }
-}
+  useEffect(() => {
+    fetchAllCampuses();
+  }, [fetchAllCampuses]);
+
+  const handleDelete = async (id) => {
+    const ok = await confirm.confirm({ title: 'Delete campus', message: 'Delete this campus? This action cannot be undone.' });
+    if (!ok) return;
+    try {
+      await deleteCampus(id);
+      toast.push('Campus deleted');
+    } catch (err) {
+      toast.push('Failed to delete campus');
+    }
+  };
+
+  return (
+    <div>
+      <Header />
+      <AllCampusesView
+        allCampuses={allCampuses}
+        deleteCampus={handleDelete}
+      />
+    </div>
+  );
+};
 
 // 1. The "mapState" argument specifies the data from Redux Store that the component needs.
 // The "mapState" is called when the Store State changes, and it returns a data object of "allCampuses".
@@ -54,6 +65,7 @@ const mapDispatch = (dispatch) => {
 AllCampusesContainer.propTypes = {
   allCampuses: PropTypes.array.isRequired,
   fetchAllCampuses: PropTypes.func.isRequired,
+  deleteCampus: PropTypes.func.isRequired,
 };
 
 // Export store-connected container by default
