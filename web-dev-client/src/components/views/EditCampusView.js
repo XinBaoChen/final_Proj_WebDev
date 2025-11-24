@@ -1,18 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const EditCampusView = ({ form, onChange, onSubmit, onCancel }) => {
+const EditCampusView = ({ form, onChange, onSubmit, onCancel, errors = {} }) => {
   return (
     <div>
       <h1>Edit Campus</h1>
       <form onSubmit={onSubmit}>
         <div>
           <label>Name:</label>
-          <input name="name" value={form.name || ''} onChange={onChange} required />
+          <input name="name" value={form.name || ''} onChange={onChange} />
+          {errors.name && <div className="form-error">{errors.name}</div>}
         </div>
         <div>
           <label>Address:</label>
-          <input name="address" value={form.address || ''} onChange={onChange} required />
+          <input name="address" value={form.address || ''} onChange={onChange} />
+          {errors.address && <div className="form-error">{errors.address}</div>}
         </div>
         <div>
           <label>Description:</label>

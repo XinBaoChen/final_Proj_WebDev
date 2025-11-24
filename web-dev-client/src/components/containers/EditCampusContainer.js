@@ -7,7 +7,7 @@ import { fetchCampusThunk, editCampusThunk } from '../../store/thunks';
 class EditCampusContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = { form: {} };
+    this.state = { form: {}, errors: {} };
   }
 
   async componentDidMount() {
@@ -23,11 +23,26 @@ class EditCampusContainer extends Component {
 
   handleChange = (e) => {
     const { name, value } = e.target;
-    this.setState((s) => ({ form: { ...s.form, [name]: value } }));
+    this.setState((s) => ({ form: { ...s.form, [name]: value } }), () => {
+      const errors = { ...this.state.errors };
+      if (name === 'name') {
+        if (!this.state.form.name || !this.state.form.name.trim()) errors.name = 'Campus name is required.';
+        else delete errors.name;
+      }
+      if (name === 'address') {
+        if (!this.state.form.address || !this.state.form.address.trim()) errors.address = 'Address is required.';
+        else delete errors.address;
+      }
+      this.setState({ errors });
+    });
   };
 
   handleSubmit = async (e) => {
     e.preventDefault();
+    const errors = {};
+    if (!this.state.form.name || !this.state.form.name.trim()) errors.name = 'Campus name is required.';
+    if (!this.state.form.address || !this.state.form.address.trim()) errors.address = 'Address is required.';
+    if (Object.keys(errors).length) return this.setState({ errors });
     const updated = await this.props.editCampus(this.state.form);
     if (updated && updated.id) {
       this.props.history.push(`/campus/${updated.id}`);
@@ -47,6 +62,7 @@ class EditCampusContainer extends Component {
           onChange={this.handleChange}
           onSubmit={this.handleSubmit}
           onCancel={this.handleCancel}
+          errors={this.state.errors}
         />
       </div>
     );

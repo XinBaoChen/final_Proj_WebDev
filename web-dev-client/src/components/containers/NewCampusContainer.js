@@ -13,13 +13,26 @@ class NewCampusContainer extends Component {
       name: '',
       address: '',
       description: '',
+      errors: {},
       redirect: false,
       redirectId: null
     };
   }
 
   handleChange = (e) => {
-    this.setState({ [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    this.setState((s) => ({ ...s, [name]: value }), () => {
+      const errors = { ...this.state.errors };
+      if (name === 'name') {
+        if (!this.state.name || !this.state.name.trim()) errors.name = 'Campus name is required.';
+        else delete errors.name;
+      }
+      if (name === 'address') {
+        if (!this.state.address || !this.state.address.trim()) errors.address = 'Address is required.';
+        else delete errors.address;
+      }
+      this.setState({ errors });
+    });
   }
 
   handleSubmit = async (e) => {
@@ -29,6 +42,10 @@ class NewCampusContainer extends Component {
       address: this.state.address,
       description: this.state.description
     };
+    const errors = {};
+    if (!campus.name || !campus.name.trim()) errors.name = 'Campus name is required.';
+    if (!campus.address || !campus.address.trim()) errors.address = 'Address is required.';
+    if (Object.keys(errors).length) return this.setState({ errors });
     const created = await this.props.addCampus(campus);
     if (created && created.id) {
       this.setState({ redirect: true, redirectId: created.id });
@@ -48,6 +65,7 @@ class NewCampusContainer extends Component {
           description={this.state.description}
           handleChange={this.handleChange}
           handleSubmit={this.handleSubmit}
+          errors={this.state.errors}
         />
       </div>
     );

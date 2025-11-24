@@ -15,44 +15,52 @@ const AllCampusesView = (props) => {
 
   // If there is at least one campus, render All Campuses view 
   return (
-    <div>
+    <div className="container fade-in">
       <h1>All Campuses</h1>
 
-      {props.allCampuses.map((campus) => (
-        <div key={campus.id}>
-          <Link to={`/campus/${campus.id}`}>
-            <h2>{campus.name}</h2>
-          </Link>
-          {/* Campus image (use provided imageUrl when available; otherwise fallback to default) */}
-          {(() => {
-            const publicUrl = process.env.PUBLIC_URL || '';
-            // Use provided imageUrl when available; otherwise generate an avatar image using UI Avatars
-            let src = `${publicUrl}/logo192.png`;
-            if (campus && campus.imageUrl) {
-              if (campus.imageUrl.startsWith('http')) src = campus.imageUrl;
-              else if (campus.imageUrl.startsWith('/')) src = campus.imageUrl;
-              else src = `${publicUrl}/${campus.imageUrl}`;
-            } else if (campus && campus.name) {
-              const name = encodeURIComponent(campus.name);
-              src = `https://ui-avatars.com/api/?name=${name}&size=512&background=0D8ABC&color=fff`;
-            }
-            return <img src={src} alt={`${campus.name} image`} style={{maxWidth: '300px', display: 'block'}} />;
-          })()}
-          <button onClick={() => props.deleteCampus(campus.id)}>Delete</button>
-          <Link to={`/campus/${campus.id}/edit`}>
-            <button>Edit</button>
-          </Link>
-          <h4>campus id: {campus.id}</h4>
-          <p>{campus.address}</p>
-          <p>{campus.description}</p>
-          <hr/>
-        </div>
-      ))}
-      <br/>
-      <Link to={`/newcampus`}>
-        <button>Add New Campus</button>
-      </Link>
-      <br/><br/>
+      <div className="list">
+        {props.allCampuses.map((campus) => {
+          const publicUrl = process.env.PUBLIC_URL || '';
+          let src = `${publicUrl}/logo192.png`;
+          if (campus && campus.imageUrl) {
+            if (campus.imageUrl.startsWith('http')) src = campus.imageUrl;
+            else if (campus.imageUrl.startsWith('/')) src = campus.imageUrl;
+            else src = `${publicUrl}/${campus.imageUrl}`;
+          } else if (campus && campus.name) {
+            const name = encodeURIComponent(campus.name);
+            src = `https://ui-avatars.com/api/?name=${name}&size=512&background=0D8ABC&color=fff`;
+          }
+
+          return (
+            <div key={campus.id} className="card list-item campus-card">
+              <Link to={`/campus/${campus.id}`} style={{textDecoration: 'none', color: 'inherit', display:'flex', alignItems:'center', flex:1, gap:12}}>
+                <img src={src} alt={campus.name} className="avatar" />
+                <div style={{flex:1}}>
+                  <h2>{campus.name}</h2>
+                  <p className="badge">id: {campus.id}</p>
+                  <p>{campus.address}</p>
+                  <p className="muted">{campus.description}</p>
+                </div>
+              </Link>
+              <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+                <Link to={`/campus/${campus.id}/enroll`}>
+                  <button className="btn btn-primary">Enroll Student</button>
+                </Link>
+                <button className="btn btn-danger" onClick={() => props.deleteCampus(campus.id)}>Delete</button>
+                <Link to={`/campus/${campus.id}/edit`}>
+                  <button className="btn btn-ghost">Edit</button>
+                </Link>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{marginTop:18}}>
+        <Link to={`/newcampus`}>
+          <button className="btn btn-primary">Add New Campus</button>
+        </Link>
+      </div>
     </div>
   );
 };

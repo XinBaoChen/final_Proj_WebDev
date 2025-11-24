@@ -31,8 +31,46 @@ class NewStudentContainer extends Component {
 
   // Capture input data when it is entered
   handleChange = event => {
-    this.setState({
-      [event.target.name]: event.target.value
+    const { name, value } = event.target;
+    this.setState((s) => ({ ...s, [name]: value }), () => {
+      // run field-level validation
+      const errors = { ...this.state.errors };
+      const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+      if (name === 'email') {
+        const v = (value || '').trim();
+        if (v && !emailRegex.test(v)) errors.email = 'Please provide a valid email address.';
+        else delete errors.email;
+      }
+      if (name === 'gpa') {
+        if (value !== '') {
+          const g = parseFloat(value);
+          if (Number.isNaN(g) || g < 0 || g > 4) errors.gpa = 'GPA must be a number between 0.0 and 4.0';
+          else delete errors.gpa;
+        } else delete errors.gpa;
+      }
+      if (name === 'campusId') {
+        // if campus selected, ensure email exists and valid
+        if (value && value !== '') {
+          const e = (this.state.email || '').trim();
+          if (!e) errors.email = 'Email is required to enroll to a campus.';
+          else if (!emailRegex.test(e)) errors.email = 'Please provide a valid email address.';
+          else delete errors.email;
+        } else {
+          // no campus selected; email optional but if present validate
+          const e = (this.state.email || '').trim();
+          if (e && !emailRegex.test(e)) errors.email = 'Please provide a valid email address.';
+          else delete errors.email;
+        }
+      }
+      if (name === 'firstname') {
+        if (!value || !value.trim()) errors.firstname = 'First name is required.';
+        else delete errors.firstname;
+      }
+      if (name === 'lastname') {
+        if (!value || !value.trim()) errors.lastname = 'Last name is required.';
+        else delete errors.lastname;
+      }
+      this.setState({ errors });
     });
   }
 
@@ -56,6 +94,8 @@ class NewStudentContainer extends Component {
 
     // Validate inputs and collect errors
     const errors = {};
+    if (!this.state.firstname || !this.state.firstname.trim()) errors.firstname = 'First name is required.';
+    if (!this.state.lastname || !this.state.lastname.trim()) errors.lastname = 'Last name is required.';
     const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
     if (student.campusId) {
       const email = (this.state.email || '').trim();
@@ -105,6 +145,18 @@ class NewStudentContainer extends Component {
   componentDidMount() {
     // Fetch campuses for the campus dropdown
     if (this.props.fetchAllCampuses) this.props.fetchAllCampuses();
+
+    // If a campusId was provided in query params (e.g. /newstudent?campusId=2), preselect it
+    try {
+      const search = this.props.location ? this.props.location.search : '';
+      const params = new URLSearchParams(search);
+      const campusId = params.get('campusId');
+      if (campusId) {
+        this.setState({ campusId: String(campusId) });
+      }
+    } catch (e) {
+      // ignore if URLSearchParams is not available or parsing fails
+    }
   }
 
   // Render new student input form
@@ -122,6 +174,12 @@ class NewStudentContainer extends Component {
           handleChange = {this.handleChange} 
           handleSubmit={this.handleSubmit}
           campuses={this.props.campuses}
+          firstname={this.state.firstname}
+          lastname={this.state.lastname}
+          campusId={this.state.campusId}
+          email={this.state.email}
+          gpa={this.state.gpa}
+          errors={this.state.errors}
         />
       </div>          
     );

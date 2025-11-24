@@ -35,51 +35,67 @@ const useStyles = makeStyles( () => ({
 }));
 
 const NewStudentView = (props) => {
-  const { handleChange, handleSubmit, campuses = [] } = props;
+  const { handleChange, handleSubmit, campuses = [], errors = {}, firstname = '', lastname = '', campusId = '', email = '', gpa = '' } = props;
   const classes = useStyles();
 
   // Render a New Student view with an input form
   return (
-    <div>
-      <h1>New Student</h1>
+    <div className="container fade-in">
+      <div className="card" style={{maxWidth:700,margin:'0 auto'}}>
+        <div style={{marginBottom:12}}>
+          <Typography style={{fontWeight: 'bold', fontFamily: 'Courier, sans-serif', fontSize: '20px', color: '#11153e'}}>
+            Add a Student
+          </Typography>
+        </div>
 
-      <div className={classes.root}>
-        <div className={classes.formContainer}>
-          <div className={classes.formTitle}>
-            <Typography style={{fontWeight: 'bold', fontFamily: 'Courier, sans-serif', fontSize: '20px', color: '#11153e'}}>
-              Add a Student
-            </Typography>
+        <form onSubmit={(e) => handleSubmit(e)}>
+          {errors.form && <div className="form-error">{errors.form}</div>}
+          <div className="form-row">
+            <div className="form-field">
+              <label>First Name</label>
+              <input type="text" name="firstname" value={firstname} onChange ={(e) => handleChange(e)} />
+              {errors.firstname && <div className="form-error">{errors.firstname}</div>}
+            </div>
+            <div className="form-field">
+              <label>Last Name</label>
+              <input type="text" name="lastname" value={lastname} onChange={(e) => handleChange(e)} />
+              {errors.lastname && <div className="form-error">{errors.lastname}</div>}
+            </div>
           </div>
-          <form style={{textAlign: 'center'}} onSubmit={(e) => handleSubmit(e)}>
-            <label style= {{color:'#11153e', fontWeight: 'bold'}}>First Name: </label>
-            <input type="text" name="firstname" onChange ={(e) => handleChange(e)} />
-            <br/>
-            <br/>
 
-            <label style={{color:'#11153e', fontWeight: 'bold'}}>Last Name: </label>
-            <input type="text" name="lastname" onChange={(e) => handleChange(e)} />
-            <br/>
-            <br/>
+          <div className="form-row">
+            <div className="form-field">
+              <label>Campus</label>
+              <select name="campusId" value={campusId || ''} onChange={(e) => handleChange(e)}>
+                <option value="">-- No Campus --</option>
+                {campuses.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name} (id: {c.id})</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-field">
+              <label>Email</label>
+              <input type="email" name="email" value={email} onChange={(e) => handleChange(e)} />
+              {errors.email && <div className="form-error">{errors.email}</div>}
+            </div>
+          </div>
 
-            <label style={{color:'#11153e', fontWeight: 'bold'}}>Campus: </label>
-            <select name="campusId" onChange={(e) => handleChange(e)}>
-              <option value="">-- No Campus --</option>
-              {campuses.map((c) => (
-                <option key={c.id} value={c.id}>{c.name} (id: {c.id})</option>
-              ))}
-            </select>
-            <br/>
-            <br/>
+          <div className="form-row">
+            <div className="form-field">
+              <label>GPA</label>
+              <input type="number" name="gpa" value={gpa} min="0" max="4" step="0.1" onChange={(e) => handleChange(e)} />
+              {errors.gpa && <div className="form-error">{errors.gpa}</div>}
+            </div>
+          </div>
 
-            <Button variant="contained" color="primary" type="submit">
+          <div style={{marginTop:12}}>
+            <Button variant="contained" color="primary" type="submit" className="btn btn-primary">
               Submit
             </Button>
-            <br/>
-            <br/>
-          </form>
           </div>
+        </form>
       </div>
-    </div>    
+    </div>
   )
 }
 

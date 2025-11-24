@@ -1,11 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const EditStudentView = ({ form, onChange, onSubmit, onCancel, campuses }) => {
+const EditStudentView = ({ form, onChange, onSubmit, onCancel, campuses, errors = {} }) => {
   return (
     <div>
       <h1>Edit Student</h1>
       <form onSubmit={onSubmit}>
+        {errors.form && <div style={{color:'red'}}>{errors.form}</div>}
         <div>
           <label>First name:</label>
           <input name="firstname" value={form.firstname || ''} onChange={onChange} required />
@@ -25,6 +26,7 @@ const EditStudentView = ({ form, onChange, onSubmit, onCancel, campuses }) => {
         <div>
           <label>GPA:</label>
           <input name="gpa" type="number" min="0" max="4" step="0.1" value={form.gpa || ''} onChange={onChange} />
+          {errors.gpa && <div style={{color:'red'}}>{errors.gpa}</div>}
         </div>
         <div>
           <label>Campus:</label>
@@ -34,6 +36,7 @@ const EditStudentView = ({ form, onChange, onSubmit, onCancel, campuses }) => {
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
+          {errors.email && <div style={{color:'red'}}>{errors.email}</div>}
         </div>
         <button type="submit">Save</button>
         <button type="button" onClick={onCancel}>Cancel</button>
