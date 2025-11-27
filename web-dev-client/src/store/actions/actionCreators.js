@@ -23,7 +23,7 @@ export const addCampus = (campus) => {
 export const deleteCampus = (campusId) => {
   return {
     type: at.DELETE_CAMPUS,
-    payload: campusId,
+    payload: Number(campusId),
   };
 };
 
@@ -60,7 +60,7 @@ export const addStudent = (student) => {
 export const deleteStudent = (studentId) => {
   return {
     type: at.DELETE_STUDENT,
-    payload: studentId,
+    payload: Number(studentId),
   };
 };
 
