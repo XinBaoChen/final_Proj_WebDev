@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node web-dev-server/app.js",
     "dev": "nodemon web-dev-server/app.js",
-    "seed": "node web-dev-server/seed.js"
+    "seed": "node web-dev-server/seed.js",
+    "vercel-build": "cd web-dev-client && npm ci && npm run build && rm -rf ../public && mkdir -p ../public && cp -r build/* ../public/"
   },
   "author": "Your Name Here",
   "license": "MIT",
