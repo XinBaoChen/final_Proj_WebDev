@@ -26,6 +26,15 @@ module.exports = async (req, res) => {
       await sequelize.authenticate();
       canConnect = true;
     } catch (e) {
+      // Log a sanitized error message and stack to make debugging easier
+      try {
+        const sanitized = sanitizeErrorMessage(e && e.message ? e.message : String(e));
+        const stack = e && e.stack ? sanitizeErrorMessage(e.stack) : undefined;
+        console.error('DB authenticate failed:', sanitized);
+        if (stack) console.error(stack);
+      } catch (logErr) {
+        console.error('Error while logging DB error', String(logErr));
+      }
       canConnect = false;
       error = sanitizeErrorMessage(e && e.message ? e.message : String(e));
     }
