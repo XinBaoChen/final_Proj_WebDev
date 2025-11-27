@@ -30,10 +30,15 @@ const CampusView = (props) => {
             return <img src={src} alt={campus && campus.name} className="avatar" />;
           })()}
 
-          <div>
+          <div style={{flex:1}}>
             <h1>{campus.name}</h1>
             <p>{campus.address}</p>
             <p className="muted">{campus.description}</p>
+            <div style={{marginTop:12, display:'flex', gap:8}}>
+              <Link to={`/newstudent?campusId=${campus.id}`}><button className="btn btn-primary">Enroll New Student</button></Link>
+              <Link to={`/campus/${campus.id}/enroll`}><button className="btn btn-ghost">Enroll Existing Student</button></Link>
+              <Link to={`/campus/${campus.id}/edit`}><button className="btn btn-ghost">Edit Campus</button></Link>
+            </div>
           </div>
         </div>
       </div>
