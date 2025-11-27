@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "web-dev-client/package.json", "use": "@vercel/static-build", "config": { "distDir": "build" } },
+    { "src": "api/**/*.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/(.*)", "dest": "/web-dev-client/$1" }
+  ],
+  "functions": {
+    "api/**/*.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  }
+}
