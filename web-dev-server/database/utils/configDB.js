@@ -3,14 +3,20 @@
 
 It declares and exports the variables for database name, username, and password.
 ==================================================*/
-// Declare the variables for database name, username, and password.
-const dbName = 'starter-server';
-const dbUser = 'postgres';
-const dbPwd = 'steven';  // Note: If needed, change this password to match the password created for PostgreSQL database on the local machine.
+// Read database configuration from environment when available (for deployment).
+// - If `DATABASE_URL` is present, `db.js` will use that connection string directly.
+// - Otherwise fall back to individual env vars or local defaults for development.
 
-// Export the variables 
+const dbName = process.env.DB_NAME || process.env.PGDATABASE || 'starter-server';
+const dbUser = process.env.DB_USER || process.env.PGUSER || 'postgres';
+const dbPwd = process.env.DB_PWD || process.env.PGPASSWORD || 'steven';
+const dbHost = process.env.DB_HOST || process.env.PGHOST || 'localhost';
+const dbPort = process.env.DB_PORT || process.env.PGPORT || 5432;
+
 module.exports = {
   dbName,
   dbUser,
-  dbPwd
+  dbPwd,
+  dbHost,
+  dbPort
 };
