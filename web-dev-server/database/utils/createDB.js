@@ -19,6 +19,24 @@ const config = {
 // If the database of that name already exists, this does nothing.
 // If the database doesn't exist, this will create the Postgres database of that name. 
 const createDB = async () => {
+  // Safety guards: do not attempt to create a local DB when a hosted
+  // `DATABASE_URL` is in use, when the user explicitly requested to skip
+  // creation, or when running inside a serverless host like Vercel.
+  if (process.env.DATABASE_URL) {
+    console.log('createDB: skipping because DATABASE_URL is present');
+    return;
+  }
+  if (process.env.SKIP_CREATE_DB === 'true') {
+    console.log('createDB: skipping because SKIP_CREATE_DB=true');
+    return;
+  }
+  // Vercel and other serverless platforms set environment markers — avoid
+  // attempting to create a local Postgres in those environments.
+  if (process.env.VERCEL || process.env.NOW_BUILDER) {
+    console.log('createDB: skipping in serverless environment');
+    return;
+  }
+
   try {
     await pgtools.createdb(config, dbName);
     console.log(`Successfully created the database: ${dbName}!`);  // Display message if database creation successful
