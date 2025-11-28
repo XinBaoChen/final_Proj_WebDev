@@ -10,7 +10,7 @@
     "migrate": "node web-dev-server/database/migrations/runMigrations.js",
     "seed:ensure": "node web-dev-server/database/utils/seedIfEmpty.js",
     "checkdb": "node scripts/checkDb.js",
-    "vercel-build": "cd web-dev-client && npm install && npm run build && rm -rf ../public && mkdir -p ../public && cp -r build/* ../public/"
+    "vercel-build": "npm --prefix web-dev-client install && npm --prefix web-dev-client run build && node scripts/copyBuild.js"
   },
   "author": "Your Name Here",
   "license": "MIT",

@@ -38,6 +38,8 @@ const syncDatabase = async () => {
 const express = require("express");
 // Create an Express application called "app"
 const app = express();
+const path = require('path');
+const fs = require('fs');
 
 /* SET UP ROUTES */
 // Import sub-routes and associated router functions for students and campuses
@@ -53,6 +55,26 @@ const configureApp = async () => {
   // Set up the Express application's main top-level route and attach all sub-routes to it
   // Add main top-level URL path "/api" before sub-routes
   app.use("/api", apiRouter);  // Updated (complete) URL paths for API: "/api/students/", "/api/students/:id", "/api/campuses/", and "/api/campuses/:id"
+
+  // Serve the client build (if present) so localhost:5001 can behave like production.
+  // This will serve files from ../public and fall back to index.html for non-/api routes.
+  const publicPath = path.join(__dirname, '../public');
+  if (fs.existsSync(publicPath)) {
+    app.use(express.static(publicPath));
+    app.get('*', (req, res, next) => {
+      // Let API routes pass through
+      if (req.originalUrl.startsWith('/api')) return next();
+      res.sendFile(path.join(publicPath, 'index.html'), (err) => {
+        if (err) next(err);
+      });
+    });
+  } else {
+    // Friendly root + favicon handlers to avoid noisy 404 logs from browsers
+    app.get('/', (req, res) => {
+      res.send('API running. Use /api/* endpoints.');
+    });
+    app.get('/favicon.ico', (req, res) => res.sendStatus(204));
+  }
 
   // Handle routing error: Page Not Found
   // It is triggered when a request is made to an undefined route 
