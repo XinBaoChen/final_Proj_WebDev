@@ -98,3 +98,9 @@ if (require.main === module) {
   const PORT = 5001;  // Server application access point port number
   app.listen(PORT, () => console.log(`Server started on ${PORT}`));
 }
+
+// Export the Express app so serverless platforms (Vercel) can consume it
+// as a serverless handler when this module is required. This does not
+// start the server because the boot sequence is guarded by
+// `require.main === module` above.
+module.exports = app;
