@@ -5,13 +5,13 @@ It creates the actual Postgres database.
 After the Postgres database is created, Sequelize can connect to it.
 ==================================================*/
 const pgtools = require('pgtools');  // Import tool to create Postgres database.
-const {dbName, dbUser, dbPwd} = require('./configDB');  // Import the database name, username, and password.
+const {dbName, dbUser, dbPwd, dbHost, dbPort} = require('./configDB');  // Import the database name, username, password and host/port.
 
 // Declare configuration parameters of the Postgres database.
 const config = {
   user: dbUser,
-  host: 'localhost',
-  port: 5432,
+  host: dbHost || 'localhost',
+  port: dbPort || 5432,
   password: dbPwd
 };
     
@@ -24,13 +24,15 @@ const createDB = async () => {
     console.log(`Successfully created the database: ${dbName}!`);  // Display message if database creation successful
   } 
   catch (err) {
-    if (err.name === 'duplicate_database') {
+    if (err && err.name === 'duplicate_database') {
       console.log(`Database ${dbName} already exists`);  // Display message if database already exists
       return;
-    } 
-    else {
-      console.error('createDB error:', err);  // Display error message if error occurs
-      process.exit(1);
+    } else {
+      // Log the error but do NOT exit the process in a serverless environment.
+      // Exiting will terminate the function host; instead surface the error
+      // so the caller (boot) can decide how to proceed.
+      console.error('createDB error:', err);
+      return; // allow caller to continue (bootApp should handle missing DB)
     }
   }
 }
