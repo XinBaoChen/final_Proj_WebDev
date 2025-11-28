@@ -107,11 +107,18 @@ const bootApp = async () => {
   await configureApp();  // Start and configure Express application
 };
 
-/* START THE SERVER BOOT */
-// Finally, run the boot process to start server application
-bootApp();
+/* START THE SERVER BOOT WHEN RUN DIRECTLY */
+// Only start the boot process and listen when this file is executed directly.
+// When this module is required by serverless functions (e.g. Vercel), we don't
+// want to automatically start a long-running HTTP server or attempt local DB
+// creation — those will run inside the serverless runtime and should be
+// avoided. Guard with require.main check accordingly.
+if (require.main === module) {
+  // Finally, run the boot process to start server application
+  bootApp();
 
-/* ACTIVATE THE SERVER PORT */
-// Set up express application to use port 5000 as the access point for the server application.
-const PORT = 5001;  // Server application access point port number
-app.listen(PORT, console.log(`Server started on ${PORT}`));
+  /* ACTIVATE THE SERVER PORT */
+  // Set up express application to use port 5001 as the access point for the server application.
+  const PORT = 5001;  // Server application access point port number
+  app.listen(PORT, () => console.log(`Server started on ${PORT}`));
+}
