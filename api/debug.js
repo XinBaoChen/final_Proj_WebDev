@@ -3,8 +3,6 @@
 // - Attempts a DB authenticate() call and returns success/failure
 // This endpoint intentionally DOES NOT return any secret values (DATABASE_URL etc.)
 
-const sequelize = require('../web-dev-server/database/db');
-
 function sanitizeErrorMessage(msg) {
   if (!msg) return msg;
   // remove any embedded postgres://... strings
@@ -12,6 +10,16 @@ function sanitizeErrorMessage(msg) {
 }
 
 module.exports = async (req, res) => {
+  // Require the DB module here so any synchronous errors during require
+  // (e.g. malformed env or unexpected runtime) can be caught and returned
+  // instead of crashing the serverless process at import time.
+  let sequelize;
+  try {
+    sequelize = require('../web-dev-server/database/db');
+  } catch (requireErr) {
+    console.error('Failed to require DB module:', requireErr && requireErr.message);
+    return res.status(500).json({ ok: false, error: 'Failed to initialize DB', details: sanitizeErrorMessage(requireErr && requireErr.message) });
+  }
   try {
     const env = {
       DATABASE_URL: !!process.env.DATABASE_URL,
