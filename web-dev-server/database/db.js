@@ -16,24 +16,27 @@ console.log('Opening database connection');
 // If a full DATABASE_URL is provided (as on Railway/Supabase/Heroku), prefer that.
 // Otherwise fall back to individual values for local development.
 let sequelize;
+
 // Reuse the Sequelize instance across serverless function invocations to avoid
 // creating many database connections. Store it on the global object in Node.
 if (global.__sequelize) {
   sequelize = global.__sequelize;
 } else {
   if (process.env.DATABASE_URL) {
-  // When running in production on many hosts, SSL is required. Provide dialectOptions accordingly.
+    // When running in production on many hosts, SSL is usually required. Provide dialectOptions accordingly.
+    const poolMax = parseInt(process.env.DB_POOL_MAX || (process.env.NODE_ENV === 'production' ? 1 : 5));
+    const useSsl = process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production';
+
     sequelize = new Sequelize(process.env.DATABASE_URL, {
       dialect: 'postgres',
       protocol: 'postgres',
       logging: false,
       pool: {
-        // In serverless environments prefer a small pool
-        max: parseInt(process.env.DB_POOL_MAX || (process.env.NODE_ENV === 'production' ? 1 : 5)),
+        max: poolMax,
         min: 0,
         idle: 10000
       },
-      dialectOptions: process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production' ? {
+      dialectOptions: useSsl ? {
         ssl: {
           require: true,
           // Some managed DBs use self-signed certs; do not reject unauthorized by default.
@@ -41,8 +44,8 @@ if (global.__sequelize) {
         }
       } : {}
     });
-} else {
-  // Local development fallback
+  } else {
+    // Local development fallback
     sequelize = new Sequelize(dbName, dbUser, dbPwd, {
       host: dbHost || 'localhost',
       port: dbPort || 5432,
@@ -54,10 +57,11 @@ if (global.__sequelize) {
         idle: 10000
       }
     });
-}
+  }
 
   // Cache for reuse in serverless invocations
   global.__sequelize = sequelize;
+}
 
 // Export Sequelize instance, which will be modified with models.
 module.exports = sequelize;
