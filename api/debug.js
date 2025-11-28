@@ -10,6 +10,12 @@ function sanitizeErrorMessage(msg) {
 }
 
 module.exports = async (req, res) => {
+  // Report basic env presence immediately so we can debug deployments
+  const envPresence = {
+    DATABASE_URL: !!process.env.DATABASE_URL,
+    DB_SSL: !!process.env.DB_SSL,
+    DB_POOL_MAX: !!process.env.DB_POOL_MAX
+  };
   // Require the DB module here so any synchronous errors during require
   // (e.g. malformed env or unexpected runtime) can be caught and returned
   // instead of crashing the serverless process at import time.
@@ -18,14 +24,12 @@ module.exports = async (req, res) => {
     sequelize = require('../web-dev-server/database/db');
   } catch (requireErr) {
     console.error('Failed to require DB module:', requireErr && requireErr.stack);
-    // If the require failed because the Postgres driver isn't available,
-    // attempt a lightweight fallback: parse DATABASE_URL and try a TCP
-    // connection to the host:port to test basic network reachability.
     const details = sanitizeErrorMessage(requireErr && requireErr.message);
 
-    // If no DATABASE_URL present, return the require error immediately.
+    // If no DATABASE_URL present, return the require error immediately
+    // along with env presence so we can see what's missing in the deploy.
     if (!process.env.DATABASE_URL) {
-      return res.status(500).json({ ok: false, error: 'Failed to initialize DB', details });
+      return res.status(500).json({ ok: false, error: 'Failed to initialize DB', details, env: envPresence });
     }
 
     // Try to parse the DATABASE_URL and open a TCP socket to the host:port.
@@ -60,7 +64,7 @@ module.exports = async (req, res) => {
       const result = await connectionPromise;
       return res.status(200).json({
         ok: true,
-        env: { DATABASE_URL: !!process.env.DATABASE_URL, DB_SSL: !!process.env.DB_SSL, DB_POOL_MAX: !!process.env.DB_POOL_MAX },
+        env: envPresence,
         canConnect: result.reachable,
         error: result.reachable ? null : `TCP connection failed: ${sanitizeErrorMessage(String(result.reason))}`,
         driverError: details
