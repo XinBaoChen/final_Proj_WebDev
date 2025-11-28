@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const sequelize = require('../database/db');
+const getSequelize = require('../database/db');
 
 function sanitizeErrorMessage(msg) {
   if (!msg) return msg;
@@ -18,6 +18,7 @@ router.get('/', async (req, res) => {
     let canConnect = false;
     let error = null;
     try {
+      const sequelize = getSequelize();
       await sequelize.authenticate();
       canConnect = true;
     } catch (e) {

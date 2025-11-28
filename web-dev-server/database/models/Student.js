@@ -4,7 +4,8 @@
 It defines the student model for the database.
 ==================================================*/
 const Sequelize = require('sequelize');  // Import Sequelize
-const db = require('../db');  // Import Sequelize database instance called "db"
+const getSequelize = require('../db');  // Import getter for Sequelize instance
+const db = getSequelize();  // Lazily obtain the Sequelize instance
 
 const Student = db.define("student", {
   firstname: {
