@@ -17,8 +17,58 @@ module.exports = async (req, res) => {
   try {
     sequelize = require('../web-dev-server/database/db');
   } catch (requireErr) {
-    console.error('Failed to require DB module:', requireErr && requireErr.message);
-    return res.status(500).json({ ok: false, error: 'Failed to initialize DB', details: sanitizeErrorMessage(requireErr && requireErr.message) });
+    console.error('Failed to require DB module:', requireErr && requireErr.stack);
+    // If the require failed because the Postgres driver isn't available,
+    // attempt a lightweight fallback: parse DATABASE_URL and try a TCP
+    // connection to the host:port to test basic network reachability.
+    const details = sanitizeErrorMessage(requireErr && requireErr.message);
+
+    // If no DATABASE_URL present, return the require error immediately.
+    if (!process.env.DATABASE_URL) {
+      return res.status(500).json({ ok: false, error: 'Failed to initialize DB', details });
+    }
+
+    // Try to parse the DATABASE_URL and open a TCP socket to the host:port.
+    try {
+      const url = new URL(process.env.DATABASE_URL);
+      const host = url.hostname;
+      const port = parseInt(url.port || '5432', 10);
+
+      const net = require('net');
+      const socket = new net.Socket();
+      let connected = false;
+
+      const connectionPromise = new Promise((resolve) => {
+        const timeout = setTimeout(() => {
+          socket.destroy();
+          resolve({ reachable: false, reason: 'timeout' });
+        }, 3000);
+
+        socket.once('error', (err) => {
+          clearTimeout(timeout);
+          resolve({ reachable: false, reason: err && err.message });
+        });
+
+        socket.connect(port, host, () => {
+          clearTimeout(timeout);
+          connected = true;
+          socket.end();
+          resolve({ reachable: true });
+        });
+      });
+
+      const result = await connectionPromise;
+      return res.status(200).json({
+        ok: true,
+        env: { DATABASE_URL: !!process.env.DATABASE_URL, DB_SSL: !!process.env.DB_SSL, DB_POOL_MAX: !!process.env.DB_POOL_MAX },
+        canConnect: result.reachable,
+        error: result.reachable ? null : `TCP connection failed: ${sanitizeErrorMessage(String(result.reason))}`,
+        driverError: details
+      });
+    } catch (fallbackErr) {
+      console.error('Fallback DB check failed:', fallbackErr && fallbackErr.stack);
+      return res.status(500).json({ ok: false, error: 'Failed to initialize DB', details });
+    }
   }
   try {
     const env = {
