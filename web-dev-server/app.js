@@ -73,7 +73,14 @@ const configureApp = async () => {
 /* SET UP BOOT FOR SERVER APPLICATION */
 // Construct the boot process by incorporating all needed processes
 const bootApp = async () => {
-  await createDB();  // Create database (if not exists)
+  // Only attempt to create a local database when we're not using a full
+  // `DATABASE_URL` (hosted DBs like Supabase) and when the user hasn't
+  // explicitly requested to skip creation via `SKIP_CREATE_DB=true`.
+  if (!process.env.DATABASE_URL && process.env.SKIP_CREATE_DB !== 'true') {
+    await createDB();
+  } else {
+    console.log('Skipping createDB: using DATABASE_URL or SKIP_CREATE_DB set');
+  }
   await syncDatabase();  // Seed the database
   await configureApp();  // Start and configure Express application
 };
