@@ -1,0 +1,9 @@
+{
+  "name": "api-deps",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "pg": "^8.5.1",
+    "sequelize": "^6.3.5"
+  }
+}
