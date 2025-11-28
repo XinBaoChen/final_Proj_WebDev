@@ -6,11 +6,9 @@ It is the first file to be called when starting the server application.
 It initiates all required parts of server application such as Express, routes, database, etc.  
 ==================================================*/
 /* SET UP DATABASE */
-// Import database setup utilities (from `web-dev-server` folder)
-const createDB = require('./web-dev-server/database/utils/createDB');  // Import function to create database
-const seedDB = require('./web-dev-server/database/utils/seedDB');  // Import function to seed database
-// Import database instance for database connection (including database name, username, and password)
-const db = require('./web-dev-server/database');
+// Database utilities are only required when running the server directly.
+// Guard requiring/booting so serverless functions that `require` this file
+// don't execute database creation or start the HTTP listener.
 
 /* MODEL SYNCHRONIZATION & DATABASE SEEDING */
 // Set up sync and seed process
@@ -68,18 +66,35 @@ const configureApp = async () => {
 };
 
 /* SET UP BOOT FOR SERVER APPLICATION */
-// Construct the boot process by incorporating all needed processes
-const bootApp = async () => {
+// Construct the boot process by incorporating all needed processes. The
+// actual DB-related modules are required lazily inside the guarded block
+// so that requiring this module from serverless functions does not
+// trigger side effects.
+const bootApp = async (createDB, seedDB, db) => {
   await createDB();  // Create database (if not exists)
-  await syncDatabase();  // Seed the database
+  await db.sync({force: true});  // Drop table if already exists (force: true)
+  console.log('------Synced to db--------')
+  await seedDB();
+  console.log('--------Successfully seeded db--------');
   await configureApp();  // Start and configure Express application
 };
 
-/* START THE SERVER BOOT */
-// Finally, run the boot process to start server application
-bootApp();
+// Only start the server when this file is executed directly. This prevents
+// serverless function invocations (which may `require('./app')`) from
+// running the boot sequence and attempting to create/connect to a local DB.
+if (require.main === module) {
+  // Lazy-require DB utilities used only during direct server boot.
+  const createDB = require('./web-dev-server/database/utils/createDB');
+  const seedDB = require('./web-dev-server/database/utils/seedDB');
+  const db = require('./web-dev-server/database');
 
-/* ACTIVATE THE SERVER PORT */
-// Set up express application to use port 5000 as the access point for the server application.
-const PORT = 5001;  // Server application access point port number
-app.listen(PORT, console.log(`Server started on ${PORT}`));
+  // Start the boot process and then listen on the configured port.
+  bootApp(createDB, seedDB, db).catch(err => {
+    console.error('Server boot failed:', err);
+    // Do not call process.exit() in case this is running in an environment
+    // that expects the process to be managed by the host.
+  });
+
+  const PORT = 5001;  // Server application access point port number
+  app.listen(PORT, () => console.log(`Server started on ${PORT}`));
+}
