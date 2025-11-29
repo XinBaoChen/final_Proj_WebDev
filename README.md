@@ -1,6 +1,10 @@
-# server-starter-code
 
-This repository is the server (back-end) starter code for Final Project - Full-Stack CRUD Application.
+Owner: By XinBao Chen
+
+This repository has both frontend and backend code for the fullstack - Full-Stack CRUD Application.
+
+For client side - cd to web-dev-client.
+For server backend - cd to web-dev-server.
 
 **Prerequisites**
 - Install PostgreSQL (Postgres) [[link](https://www.postgresql.org/download/)] - required to run the database
@@ -42,3 +46,4 @@ In the `server-starter-code/database/utils/configDB.js` file, replace the `dBpwd
   const dbUser = 'postgres';
   const dbPwd = '<your password>';
 ```
+
