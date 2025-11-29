@@ -1,0 +1,4 @@
+# docker-compose configuration removed per user request.
+# The project now uses a SQLite fallback for local development so
+# Docker is not required. If you need the original compose file,
+# restore it from version control or contact the project maintainer.

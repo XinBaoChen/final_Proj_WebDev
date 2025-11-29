@@ -1,27 +1,22 @@
-/*==================================================
-/database/db.js
+/*
+  web-dev-server/database/db.js
 
-It sets up Sequelize with Postgres database. 
-- Create a Sequelize instance to connect to the database specifying database name, username, and password.
-==================================================*/
-/* INSTANTIATE DATABASE */ 
+  Lazy Sequelize getter. Prefer Postgres when `DATABASE_URL` is set;
+  otherwise use a local SQLite file so the server can be started with
+  `npm start` for teacher/local testing without Docker or Postgres.
+*/
 
-// Import module dependencies
-const Sequelize = require('sequelize');  // Import Sequelize
-const {dbName, dbUser, dbPwd, dbHost, dbPort} = require('./utils/configDB');  // Import database connection defaults
+const { Sequelize } = require('sequelize');
 
-// Lazy-initialize and cache the Sequelize instance. This avoids attempting
-// to load the Postgres driver or open outbound connections at module
-// require-time (which can crash serverless function bundles).
-function createSequelizeInstance() {
-  // Display a confirmation message when actually opening a connection
-  console.log('Opening database connection');
+function getSequelize() {
+  if (global.__sequelize) return global.__sequelize;
 
+  let sequelize;
   if (process.env.DATABASE_URL) {
     const poolMax = parseInt(process.env.DB_POOL_MAX || (process.env.NODE_ENV === 'production' ? 1 : 5));
     const useSsl = process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production';
 
-    return new Sequelize(process.env.DATABASE_URL, {
+    sequelize = new Sequelize(process.env.DATABASE_URL, {
       dialect: 'postgres',
       protocol: 'postgres',
       logging: false,
@@ -30,32 +25,13 @@ function createSequelizeInstance() {
         min: 0,
         idle: 10000
       },
-      dialectOptions: useSsl ? {
-        ssl: {
-          require: true,
-          rejectUnauthorized: false
-        }
-      } : {}
+      dialectOptions: useSsl ? { ssl: { require: true, rejectUnauthorized: false } } : {}
     });
+  } else {
+    const storagePath = process.env.SQLITE_STORAGE || './dev.sqlite';
+    sequelize = new Sequelize({ dialect: 'sqlite', storage: storagePath, logging: false });
   }
 
-  // Local development fallback
-  return new Sequelize(dbName, dbUser, dbPwd, {
-    host: dbHost || 'localhost',
-    port: dbPort || 5432,
-    dialect: 'postgres',
-    logging: false,
-    pool: {
-      max: parseInt(process.env.DB_POOL_MAX || 5),
-      min: 0,
-      idle: 10000
-    }
-  });
-}
-
-function getSequelize() {
-  if (global.__sequelize) return global.__sequelize;
-  const sequelize = createSequelizeInstance();
   global.__sequelize = sequelize;
   return sequelize;
 }

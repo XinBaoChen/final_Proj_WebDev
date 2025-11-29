@@ -13,7 +13,8 @@
     "vercel-build": "npm --prefix web-dev-client install && npm --prefix web-dev-client run build && node scripts/copyBuild.js",
     "postinstall": "npm --prefix api install"
   },
-  "author": "Your Name Here",
+  "runLocal": "powershell -ExecutionPolicy Bypass -File run-local.ps1",
+  "author": "XinBao Chen",
   "license": "MIT",
   "dependencies": {
     "express": "^4.17.1",

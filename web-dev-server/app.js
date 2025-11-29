@@ -114,11 +114,38 @@ const bootApp = async () => {
 // creation — those will run inside the serverless runtime and should be
 // avoided. Guard with require.main check accordingly.
 if (require.main === module) {
-  // Finally, run the boot process to start server application
-  bootApp();
+  (async () => {
+    // Run boot process (sync/seed/configure) then start listening.
+      await bootApp();
+      const PORT = parseInt(process.env.PORT, 10) || 5001;
+      const preferredHosts = [process.env.HOST || 'localhost', '127.0.0.1', '0.0.0.0'];
 
-  /* ACTIVATE THE SERVER PORT */
-  // Set up express application to use port 5001 as the access point for the server application.
-  const PORT = 5001;  // Server application access point port number
-  app.listen(PORT, () => console.log(`Server started on ${PORT}`));
+      // Try binding to preferred hosts in order. If a host is in use, try the
+      // next one instead of crashing the process.
+      let started = false;
+      for (const HOST of preferredHosts) {
+        try {
+          await new Promise((resolve, reject) => {
+            const server = app.listen(PORT, HOST, () => {
+              console.log(`Server started at http://${HOST}:${PORT}`);
+              started = true;
+              resolve();
+            });
+            server.on('error', (err) => reject(err));
+          });
+          if (started) break;
+        } catch (err) {
+          if (err && err.code === 'EADDRINUSE') {
+            console.warn(`Port ${PORT} in use on ${HOST}, trying next host...`);
+            continue;
+          }
+          console.error('Failed to start server:', err);
+          process.exit(1);
+        }
+      }
+      if (!started) {
+        console.error(`Unable to bind to port ${PORT} on any host (${preferredHosts.join(', ')}).`);
+        process.exit(1);
+      }
+  })();
 }
