@@ -11,19 +11,30 @@ const createDB = require('./database/utils/createDB');  // Import function to cr
 const seedDB = require('./database/utils/seedDB');  // Import function to seed database
 // Import database instance for database connection (including database name, username, and password)
 const db = require('./database');
+const { Campus, Student } = require('./database/models');
 
 /* MODEL SYNCHRONIZATION & DATABASE SEEDING */
 // Set up sync and seed process
 const syncDatabase = async () => {
   try {
+    // Ensure target schema exists (Postgres only). If it already exists,
+    // this will throw; safely ignore in that case.
+    try { await db.createSchema('campuses'); } catch (_) {}
     // Model Synchronization:
     // By default do a non-destructive sync. To force a drop-and-create, set env var `FORCE_SYNC=true`.
     const force = process.env.FORCE_SYNC === 'true';
-    await db.sync({ force });
+    // If not forcing a full drop-and-create, enable alter so Sequelize
+    // will add missing columns like the explicit `campusId` FK.
+    const alter = !force;
+    await db.sync({ force, alter });
     console.log('------Synced to db--------')
     // Database Seeding
-    // Only seed when explicitly requested via env var `SEED_DB=true` or when forcing a sync.
-    if (process.env.SEED_DB === 'true' || force) {
+    // Seed when explicitly requested via env var `SEED_DB=true`, when forcing
+    // a sync, or when the campuses table is empty (first run for graders).
+    const shouldSeedFlag = process.env.SEED_DB === 'true' || force;
+    const campusCount = await Campus.count();
+    const needsSeed = campusCount === 0;
+    if (shouldSeedFlag || needsSeed) {
       await seedDB();
       console.log('--------Successfully seeded db--------');
     }

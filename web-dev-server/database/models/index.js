@@ -6,8 +6,10 @@ It registers models, sets up associations between tables, and generates barrel f
 const Student  = require('./Student');  // Import Student model
 const Campus  = require('./Campus');  // Import Campus model
 
-Student.belongsTo(Campus);  // Student belongs to only one Campus 
-Campus.hasMany(Student);  // Campus can have many Student
+// Use an explicit foreign key name to ensure a predictable column in Postgres
+// and avoid default "CampusId" casing issues.
+Student.belongsTo(Campus, { foreignKey: { name: 'campusId', allowNull: true }, onDelete: 'SET NULL' });
+Campus.hasMany(Student, { foreignKey: { name: 'campusId', allowNull: true } });
 
 // Export models and associations
 module.exports = {

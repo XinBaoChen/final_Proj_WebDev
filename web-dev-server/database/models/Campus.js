@@ -11,24 +11,27 @@ const db = getSequelize();  // Lazily obtain the Sequelize instance
 const Campus = db.define("campus", {
   name: {
     type: Sequelize.STRING,
-    allowNull: false
+    allowNull: false,
+    validate: { notEmpty: true }
   },
 
   address: {
     type: Sequelize.STRING,
-    allowNull: false
+    allowNull: false,
+    validate: { notEmpty: true }
   },
 
   description: {
-    type: Sequelize.STRING,
-  }
-  ,
+    type: Sequelize.TEXT,
+    allowNull: true
+  },
+
   imageUrl: {
     type: Sequelize.STRING,
     allowNull: true,
-    defaultValue: null
+    defaultValue: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&q=80'
   }
-});
+}, { schema: 'campuses' });
 
 // Export the campus model
 module.exports = Campus;

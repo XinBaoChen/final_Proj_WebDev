@@ -27,11 +27,6 @@ const createDB = async () => {
     console.log('createDB: skipping because DATABASE_URL is present');
     return;
   }
-  // If using the local SQLite fallback, there's no Postgres to create.
-  if (!process.env.DATABASE_URL && (process.env.USE_SQLITE === 'true' || !process.env.DB_HOST)) {
-    console.log('createDB: skipping because using local SQLite fallback');
-    return;
-  }
   if (process.env.SKIP_CREATE_DB === 'true') {
     console.log('createDB: skipping because SKIP_CREATE_DB=true');
     return;

@@ -7,30 +7,34 @@
 */
 
 const { Sequelize } = require('sequelize');
+const { dbName, dbUser, dbPwd, dbHost, dbPort } = require('./utils/configDB');
 
 function getSequelize() {
   if (global.__sequelize) return global.__sequelize;
 
-  let sequelize;
-  if (process.env.DATABASE_URL) {
-    const poolMax = parseInt(process.env.DB_POOL_MAX || (process.env.NODE_ENV === 'production' ? 1 : 5));
-    const useSsl = process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production';
+  const useDatabaseUrl = Boolean(process.env.DATABASE_URL);
+  const poolMax = parseInt(process.env.DB_POOL_MAX || (process.env.NODE_ENV === 'production' ? 1 : 5));
+  const useSsl = process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production';
 
-    sequelize = new Sequelize(process.env.DATABASE_URL, {
-      dialect: 'postgres',
-      protocol: 'postgres',
-      logging: false,
-      pool: {
-        max: poolMax,
-        min: 0,
-        idle: 10000
-      },
-      dialectOptions: useSsl ? { ssl: { require: true, rejectUnauthorized: false } } : {}
-    });
-  } else {
-    const storagePath = process.env.SQLITE_STORAGE || './dev.sqlite';
-    sequelize = new Sequelize({ dialect: 'sqlite', storage: storagePath, logging: false });
-  }
+  const baseOptions = {
+    dialect: 'postgres',
+    protocol: 'postgres',
+    logging: false,
+    pool: {
+      max: poolMax,
+      min: 0,
+      idle: 10000,
+    },
+    dialectOptions: useSsl ? { ssl: { require: true, rejectUnauthorized: false } } : {},
+  };
+
+  const sequelize = useDatabaseUrl
+    ? new Sequelize(process.env.DATABASE_URL, baseOptions)
+    : new Sequelize(dbName, dbUser, dbPwd, {
+        host: dbHost,
+        port: dbPort,
+        ...baseOptions,
+      });
 
   global.__sequelize = sequelize;
   return sequelize;
